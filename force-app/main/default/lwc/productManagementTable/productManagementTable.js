@@ -27,7 +27,7 @@ export default class ProductManagementTable extends LightningElement {
     }
     
     @wire(getProducts)
-    wiredProducts({ error, data }) {
+    fetchProducts({ error, data }) {
         if (error) {
             this.error = error;
         } else if (data) {
@@ -111,6 +111,5 @@ export default class ProductManagementTable extends LightningElement {
 			this.tableSize = this._table ? this._table.length : this.tableSize;
 			this.isSpinnerShown = false;
         }
-        console.log(this.activeRecordsCountToView)
 	}
 }
