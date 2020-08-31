@@ -3,7 +3,7 @@ import getProducts from '@salesforce/apex/productManagementController.getProduct
 
 export default class ProductManagementTable extends LightningElement {
 
-    fields = ['Name', 'Description', 'Pricebook standart', 'Pricebook 1', 'Pricebook 2', 'Edit/Viev']
+    fields = ['Product Name', 'Description', 'Pricebook standart', 'Pricebook 1', 'Pricebook 2', 'Edit/Viev']
 
 	@track activeDataTableRecords = [];
     @track _table;
