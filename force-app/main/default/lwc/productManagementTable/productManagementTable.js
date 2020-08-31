@@ -3,7 +3,7 @@ import getProducts from '@salesforce/apex/productManagementController.getProduct
 
 export default class ProductManagementTable extends LightningElement {
 
-    fields = ['Product Name', 'Description', 'Pricebook standart', 'Pricebook 1', 'Pricebook 2', 'Edit/Viev']
+    fields = ['Product Name', 'Description', 'Product Code', 'Pricebook standart', 'Pricebook 1', 'Pricebook 2', 'Edit/Viev']
 
 	@track activeDataTableRecords = [];
     @track _table;
@@ -14,6 +14,7 @@ export default class ProductManagementTable extends LightningElement {
     @api activePageNumber = 1;
     @api tempPageNumber = 1;
     @api tableSize;
+    error
     isSpinnerShown = true;
     pageNumberTimeout = null;
     recordsCountToViewTimeout = null;
@@ -31,6 +32,7 @@ export default class ProductManagementTable extends LightningElement {
         if (error) {
             this.error = error;
         } else if (data) {
+            console.log(data)
             this.table = data;
         }
     }
