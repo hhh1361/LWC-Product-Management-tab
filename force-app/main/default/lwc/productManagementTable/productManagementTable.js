@@ -7,14 +7,15 @@ export default class ProductManagementTable extends LightningElement {
 
 	@track activeDataTableRecords = [];
     @track _table;
+    @track defaultTable
     @api pagesCount;
     @api recordsCount;
     @api activeRecordsCountToView = 10;
-    @api tempRecordsCountToView = 10
+    @api tempRecordsCountToView = 10;
     @api activePageNumber = 1;
     @api tempPageNumber = 1;
     @api tableSize;
-    error
+    error;
     isSpinnerShown = true;
     pageNumberTimeout = null;
     recordsCountToViewTimeout = null;
@@ -24,7 +25,7 @@ export default class ProductManagementTable extends LightningElement {
 	}
 	set table(value) {
 		this._table = value;
-		this.setPagination(false);
+		this.setPagination(true);
     }
     
     @wire(getProducts)
@@ -34,6 +35,7 @@ export default class ProductManagementTable extends LightningElement {
         } else if (data) {
             console.log(data)
             this.table = data;
+            this.defaultTable = data;
         }
     }
     
@@ -57,7 +59,7 @@ export default class ProductManagementTable extends LightningElement {
             this.pageNumberTimeout = setTimeout(() => {
                 if (this.tempPageNumber <= this.pagesCount && this.tempPageNumber > 0) {
                     this.activePageNumber = this.tempPageNumber;
-                    this.setPagination(true);
+                    this.setPagination(false);
                 }
             }, 2000);
         } else {
@@ -68,18 +70,18 @@ export default class ProductManagementTable extends LightningElement {
                 if (this.tempRecordsCountToView <= this.recordsCount && this.tempRecordsCountToView  > 0) {
                     this.activeRecordsCountToView = this.tempRecordsCountToView
                     this.activePageNumber = 1;
-                    this.setPagination(true);
+                    this.setPagination(false);
                 }
             }, 2000);
 		}
-		this.setPagination(true);
+		this.setPagination(false);
 	}
 
 	onBlurPageNumber() {
         clearTimeout(this.pageNumberTimeout)
 		if (this.tempPageNumber <= this.pagesCount && this.tempPageNumber > 0) {
 			this.activePageNumber = this.tempPageNumber;
-			this.setPagination(true);
+			this.setPagination(false);
 		}
 		this.tempPageNumber = 1;
     }
@@ -89,15 +91,15 @@ export default class ProductManagementTable extends LightningElement {
 		if (this.tempRecordsCountToView <= this.recordsCount && this.tempRecordsCountToView > 0) {
             this.activeRecordsCountToView = this.tempRecordsCountToView;
             this.activePageNumber = 1;
-			this.setPagination(true);
+			this.setPagination(false);
 		}
 		this.tempRecordsCountToView = 10;
     }
 
-	setPagination(noNewFilters) {
+	setPagination(haveNewFilters) {
 		if (this.table) {
 			this.isSpinnerShown = true;
-			if (noNewFilters === false) { // Jump to the first page if filter has been changed
+			if (haveNewFilters === true) { // Jump to the first page if filter has been changed
 				this.activePageNumber = 1;
 			}
             this.recordsCount = this._table.length;
@@ -113,5 +115,10 @@ export default class ProductManagementTable extends LightningElement {
 			this.tableSize = this._table ? this._table.length : this.tableSize;
 			this.isSpinnerShown = false;
         }
-	}
+    }
+    
+    handleSearchProduct(e) {
+        // regexp to implement case insensitive search
+        this.table = this.defaultTable.filter( i => (new RegExp(e.target.value, 'i')).test(i.Name));
+    }
 }

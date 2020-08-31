@@ -1,84 +1,85 @@
 <template>
     <template if:true={isSpinnerShown}>
-		<lightning-spinner size="small"></lightning-spinner>
-	</template>
-    <div class="slds-table_edit_container slds-is-relative">
-        <table class="slds-table slds-table_cell-buffer slds-table_bordered">
-            <thead>
-                <tr class="slds-line-height_reset">
-                    <template for:each={fields} for:item="field">
-                        <th class="" scope="col" key={field}>
-                            <div class="slds-truncate" title="field">{field}</div>
-                        </th>
-                    </template>
-                </tr>
-            </thead>
-            <tbody>
-                <template for:each={activeDataTableRecords} for:item="product" for:index="index"> 
-                    <c-product-management-row key={product.Id} record={product}></c-product-management-row>
-                </template>
-            </tbody>
-        </table>
-    </div>  
-
-    <!-- block: pagination -->
-    <div class="slds-grid slds-m-vertical--medium">
-        <!--block: chose record per page quantity -->
-        <div class="slds-grid slds-text-align_left">
-            <div class="slds-m-top--x-small">
-                Rows per page
+        <lightning-spinner size="small"></lightning-spinner>
+    </template>
+    <div class="slds-box slds-theme_default">
+        <div class="slds-grid slds-grid_align-spread">
+            <!-- search records block -->
+            <div class="slds-col slds-m-bottom-small">
+                <lightning-input type="text" placeholder="Search Product..." autocomplete="off"
+                    onchange={handleSearchProduct}></lightning-input>
             </div>
-            <lightning-input 
-                type="number"
-                step="1"
-                min="1"
-                max={recordsCount}
-                class="input-width slds-m-horizontal--xx-small"
-                data-id="recordsPerPage"
-                variant="label-hidden"
-                value={activeRecordsCountToView}
-                onblur={onBlurRecordsCountToViewT}
-                onchange={onChangePaginationClick}>
-            </lightning-input>
-            <div class="slds-m-top--x-small">
-                of {recordsCount}
-           </div>
+
+            <!-- create record block -->
+            <div class="slds-col  slds-m-vertical_xx-small slds-p-around_medium">
+                <lightning-button label="Create Product" variant="brand" onclick={handleCreateProduct}>
+                </lightning-button>
+            </div>
         </div>
-        
-        <!-- block: buttons to move through pages -->
-		<div class="slds-grid slds-align_absolute-center">
-            <button class="slds-button slds-button_outline-brand" data-id="first" onclick={onChangePaginationClick}>
-                &lt;&lt;
-            </button>
-            <button class="slds-button slds-button_outline-brand" data-id="previous" onclick={onChangePaginationClick}>
-                Previous
-            </button>
-            <button class="slds-button slds-button_outline-brand" data-id="next" onclick={onChangePaginationClick}>
-                Next
-            </button>
-            <button class="slds-button slds-button_outline-brand" data-id="last" onclick={onChangePaginationClick}>
-                >>
-            </button>
+        <div class="slds-table_edit_container slds-is-relative">
+            <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                <thead>
+                    <tr class="slds-line-height_reset">
+                        <template for:each={fields} for:item="field">
+                            <th class="" scope="col" key={field}>
+                                <div class="slds-truncate" title="field">{field}</div>
+                            </th>
+                        </template>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template for:each={activeDataTableRecords} for:item="product" for:index="index">
+                        <c-product-management-row key={product.Id} record={product}></c-product-management-row>
+                    </template>
+                </tbody>
+            </table>
         </div>
-        <!-- block: chose exact page -->
-		<div class="slds-grid slds-text-align_right">
-			<div class="slds-m-top--x-small">
-				Page
-			</div>
-			<lightning-input type="number"
-                step="1"
-                min="1"
-                max={pagesCount}
-                class="input-width slds-m-horizontal--xx-small"
-                data-id="page"
-                variant="label-hidden"
-                value={activePageNumber}
-                onblur={onBlurPageNumber}
-                onchange={onChangePaginationClick}>
-            </lightning-input>
-            <div class="slds-m-top--x-small">
-                of {pagesCount}
-           </div>
-		</div>
-	</div>
+    
+        <!-- block: pagination -->
+        <div class="slds-grid slds-m-vertical--medium">
+            <!--block: chose record per page quantity -->
+            <div class="slds-grid slds-text-align_left">
+                <div class="slds-m-top--x-small">
+                    Rows per page
+                </div>
+                <lightning-input type="number" step="1" min="1" max={recordsCount}
+                    class="input-width slds-m-horizontal--xx-small" data-id="recordsPerPage" variant="label-hidden"
+                    value={activeRecordsCountToView} onblur={onBlurRecordsCountToViewT} onchange={onChangePaginationClick}>
+                </lightning-input>
+                <div class="slds-m-top--x-small">
+                    of {recordsCount}
+                </div>
+            </div>
+    
+            <!-- block: buttons to move through pages -->
+            <div class="slds-grid slds-align_absolute-center">
+                <button class="slds-button slds-button_outline-brand" data-id="first" onclick={onChangePaginationClick}>
+                    &lt;&lt;
+                </button>
+                <button class="slds-button slds-button_outline-brand" data-id="previous" onclick={onChangePaginationClick}>
+                    Previous
+                </button>
+                <button class="slds-button slds-button_outline-brand" data-id="next" onclick={onChangePaginationClick}>
+                    Next
+                </button>
+                <button class="slds-button slds-button_outline-brand" data-id="last" onclick={onChangePaginationClick}>
+                    >>
+                </button>
+            </div>
+            <!-- block: chose exact page -->
+            <div class="slds-grid slds-text-align_right">
+                <div class="slds-m-top--x-small">
+                    Page
+                </div>
+                <lightning-input type="number" step="1" min="1" max={pagesCount}
+                    class="input-width slds-m-horizontal--xx-small" data-id="page" variant="label-hidden"
+                    value={activePageNumber} onblur={onBlurPageNumber} onchange={onChangePaginationClick}>
+                </lightning-input>
+                <div class="slds-m-top--x-small">
+                    of {pagesCount}
+                </div>
+            </div>
+        </div>
+    </div>
+    
 </template>
