@@ -1,9 +1,13 @@
 import { LightningElement, wire, api, track } from 'lwc';
+import { createRecord } from 'lightning/uiRecordApi';
+import { refreshApex } from '@salesforce/apex';
+import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import getProducts from '@salesforce/apex/productManagementController.getProducts'
 
 export default class ProductManagementTable extends LightningElement {
 
     fields = ['Product Name', 'Description', 'Product Code', 'Pricebook standart', 'Pricebook 1', 'Pricebook 2', 'Edit/Viev']
+    newRecordFields = ['Name', 'Description', 'StockKeepingUnit']
 
 	@track activeDataTableRecords = [];
     @track _table;
@@ -16,7 +20,7 @@ export default class ProductManagementTable extends LightningElement {
     @api tempPageNumber = 1;
     @api tableSize;
     error;
-    isSpinnerShown = true;
+    isLoading = true;
     pageNumberTimeout = null;
     recordsCountToViewTimeout = null;
     
@@ -28,8 +32,11 @@ export default class ProductManagementTable extends LightningElement {
 		this.setPagination(true);
     }
     
+    wiredProducts
     @wire(getProducts)
-    fetchProducts({ error, data }) {
+    wireProducts(value) {
+        this.wiredProducts = value;
+        const { error, data } = value; 
         if (error) {
             this.error = error;
         } else if (data) {
@@ -39,6 +46,8 @@ export default class ProductManagementTable extends LightningElement {
         }
     }
     
+
+    // pagination functions
 	onChangePaginationClick(event) {
 	    if (event.target.dataset.id === 'first') {
 	        this.activePageNumber = 1;
@@ -76,7 +85,6 @@ export default class ProductManagementTable extends LightningElement {
 		}
 		this.setPagination(false);
 	}
-
 	onBlurPageNumber() {
         clearTimeout(this.pageNumberTimeout)
 		if (this.tempPageNumber <= this.pagesCount && this.tempPageNumber > 0) {
@@ -85,7 +93,6 @@ export default class ProductManagementTable extends LightningElement {
 		}
 		this.tempPageNumber = 1;
     }
-    
     onBlurRecordsCountToViewT() {
         clearTimeout(this.recordsCountToViewTimeout)
 		if (this.tempRecordsCountToView <= this.recordsCount && this.tempRecordsCountToView > 0) {
@@ -95,10 +102,9 @@ export default class ProductManagementTable extends LightningElement {
 		}
 		this.tempRecordsCountToView = 10;
     }
-
 	setPagination(haveNewFilters) {
 		if (this.table) {
-			this.isSpinnerShown = true;
+			this.isLoading = true;
 			if (haveNewFilters === true) { // Jump to the first page if filter has been changed
 				this.activePageNumber = 1;
 			}
@@ -113,12 +119,70 @@ export default class ProductManagementTable extends LightningElement {
 				}
 			}
 			this.tableSize = this._table ? this._table.length : this.tableSize;
-			this.isSpinnerShown = false;
+			this.isLoading = false;
         }
     }
     
+
+    // search record functions
     handleSearchProduct(e) {
         // regexp to implement case insensitive search
         this.table = this.defaultTable.filter( i => (new RegExp(e.target.value, 'i')).test(i.Name));
+    }
+
+
+    // create new record functions
+    @track newRecordObject = {};
+    handleModalOpen() {
+        this.template.querySelector("section").classList.remove("slds-hide");
+        this.template.querySelector("div.modalBackdrops").classList.remove("slds-hide");
+    }
+    handleModalClose() {
+        this.template.querySelector("section").classList.add("slds-hide");
+        this.template.querySelector("div.modalBackdrops").classList.add("slds-hide");
+        this.newRecordObject = {};
+        this.template.querySelector('form').reset();
+    }
+    createRecordSave() {
+        if(this.newRecordObject.Name) {
+            this.isLoading = true;
+            const recordInput = { apiName: 'Product2', fields: this.newRecordObject };
+            createRecord(recordInput)
+            .then(product => {
+                refreshApex(this.wiredProducts)
+                this.dispatchEvent(
+                    new ShowToastEvent({
+                        title: 'Success',
+                        message: 'Product created',
+                        variant: 'success',
+                    }),
+                );
+            })
+            .catch(error => {
+                this.dispatchEvent(
+                    new ShowToastEvent({
+                        title: 'Error creating record',
+                        message: error.body.message,
+                        variant: 'error',
+                    }),
+                );
+            });
+            this.isLoading = false;
+            this.handleModalClose();
+        } else {
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'Product Name is required',
+                    message: 'Please complete the Product Name field in order to continue.',
+                    variant: 'error',
+                }),
+            );
+        }
+    }
+    createRecordCancel() {
+        this.handleModalClose();
+    }
+    createRecordUpdateField(e) {
+        this.newRecordObject[e.target.name] = e.target.value;
     }
 }
