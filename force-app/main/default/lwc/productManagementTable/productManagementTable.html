@@ -2,26 +2,31 @@
     <template if:true={isLoading}>
         <lightning-spinner size="small"></lightning-spinner>
     </template>
+
+    <div class="slds-backdrop slds-backdrop_open modalBackdrops slds-hide"></div>
+
     <div class="slds-box slds-theme_default">
         <div class="slds-grid slds-grid_align-spread">
-            <!-- search records input -->
+            <!-- block: search records input -->
             <div class="slds-col">
                 <lightning-input type="text" placeholder="Search Product..." autocomplete="off"
                     onchange={handleSearchProduct}></lightning-input>
             </div>
 
-            <!-- create new record button -->
-            <div class="slds-col  slds-var-m-vertical_xx-small slds-var-p-around_medium">
-                <lightning-button class="slds-var-m-horizontal_medium" label="Create Product" variant="brand"
-                    onclick={handleModalOpen}>
+            <!-- block: create new record/price book buttons -->
+            <div class="slds-col slds-var-m-vertical_xx-small slds-var-p-around_medium">
+                <lightning-button class="slds-var-m-horizontal_small" label="Create Price Book" variant="brand"
+                    onclick={handleNewPriceBookModalOpen}>
+                </lightning-button>
+                <lightning-button class="slds-var-m-horizontal_small" label="Create Product" variant="brand"
+                    onclick={handleNewProductModalOpen}>
                 </lightning-button>
             </div>
         </div>
 
-        <!-- create new record pop up -->
-        <div class="chart slds-var-m-around_medium" lwc:dom="manual"></div>
+        <!-- block: create new record pop up -->
         <section id="modal" role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true"
-            aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open slds-hide">
+            aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open slds-hide newProduct">
             <div class="slds-modal__container">
                 <header class="slds-modal__header">
                     <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
@@ -30,33 +35,76 @@
                             size="small"></lightning-icon>
                         <span class="slds-assistive-text">Close</span>
                     </button>
-                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Create Product</h2>
+                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">New Product</h2>
                 </header>
                 <form>
                     <div class="slds-modal__content slds-var-p-around_medium" id="modal-content-id-1">
                         <div class="slds-var-p-around_medium lgc-bg newProductInput">
-                            <lightning-input type="text" label="Product Name" name="Name"
-                                onchange={createRecordUpdateField} value={newProductName} required></lightning-input>
+                            <lightning-input type="text" label="Product Name" name="Name" required
+                                onchange={createFormProductUpdate}></lightning-input>
                         </div>
                         <div class="slds-var-p-around_medium lgc-bg newProductInput">
                             <lightning-input type="text" label="Product Description" name="Description"
-                                onchange={createRecordUpdateField}></lightning-input>
+                                onchange={createFormProductUpdate}></lightning-input>
                         </div>
                         <div class="slds-var-p-around_medium lgc-bg newProductInput">
                             <lightning-input type="text" label="Product SKU" name="StockKeepingUnit"
-                                onchange={createRecordUpdateField}></lightning-input>
+                                onchange={createFormProductUpdate}></lightning-input>
                         </div>
                         <div class="slds-grid slds-grid_align-center">
-                            <lightning-button class="slds-var-p-around_small lgc-bg" type="submit" label="Cancel"
-                                onclick={createRecordCancel}></lightning-button>
+                            <lightning-button class="slds-var-p-around_small lgc-bg" type="button" label="Cancel"
+                                onclick={handleModalClose}></lightning-button>
                             <lightning-button class="slds-var-p-around_small lgc-bg" type="submit" variant="brand"
-                                label="Save" onclick={createRecordSave}></lightning-button>
+                                label="Save" onclick={createFormProductSave}></lightning-button>
                         </div>
                     </div>
                 </form>
             </div>
         </section>
-        <div class="slds-backdrop slds-backdrop_open modalBackdrops slds-hide"></div>
+
+
+
+        <!-- block: create new price book pop up -->
+        <section id="modal2" role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true"
+            aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open slds-hide newPriceBook">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse"
+                        title="Close" onclick={handleModalClose}>
+                        <lightning-icon icon-name="utility:close" alternative-text="close" variant="inverse"
+                            size="small"></lightning-icon>
+                        <span class="slds-assistive-text">Close</span>
+                    </button>
+                    <h2 id="modal-heading-02" class="slds-text-heading_medium slds-hyphenate">New Price Book</h2>
+                </header>
+                <form>
+                    <div class="slds-modal__content slds-var-p-around_medium" id="modal-content-id-2">
+                        <div class="slds-var-p-around_medium lgc-bg newProductInput">
+                            <lightning-input type="text" label="Price Book Name" name="Name" required
+                                onchange={createFormPriceBookUpdate}></lightning-input>
+                        </div>
+                        <div class="slds-var-p-around_medium lgc-bg newProductInput">
+                            <lightning-input type="text" label="Product Description" name="Description"
+                                onchange={createFormPriceBookUpdate}></lightning-input>
+                        </div>
+                        <div class="slds-var-p-around_medium lgc-bg newProductInput">
+                            <lightning-input type="checkbox" label="Active" name="isActive"
+                                onchange={createFormPriceBookUpdate}></lightning-input>
+                        </div>
+                        <div class="slds-var-p-around_medium lgc-bg newProductInput">
+                            <lightning-input type="checkbox" label="Is Standard Price Book" name="IsStandard"
+                                onchange={createFormPriceBookUpdate}></lightning-input>
+                        </div>
+                        <div class="slds-grid slds-grid_align-center">
+                            <lightning-button class="slds-var-p-around_small lgc-bg" type="button" label="Cancel"
+                                onclick={handleModalClose}></lightning-button>
+                            <lightning-button class="slds-var-p-around_small lgc-bg" type="submit" variant="brand"
+                                label="Save" onclick={createFormPriceBookSave}></lightning-button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </section>
 
         <!-- data table -->
         <div class="slds-table_edit_container slds-is-relative">
@@ -80,7 +128,7 @@
 
         <!-- block: pagination -->
         <div class="slds-grid slds-var-m-vertical_medium">
-            <!--block: chose record per page quantity -->
+            <!--block: choose record per page quantity -->
             <div class="slds-grid slds-text-align_left">
                 <div class="slds-var-m-top_x-small">
                     Rows per page
@@ -111,7 +159,7 @@
                     >>
                 </button>
             </div>
-            <!-- block: chose exact page -->
+            <!-- block: choose exact page -->
             <div class="slds-grid slds-text-align_right">
                 <div class="slds-var-m-top_x-small">
                     Page

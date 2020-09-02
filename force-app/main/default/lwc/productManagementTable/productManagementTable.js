@@ -132,23 +132,30 @@ export default class ProductManagementTable extends LightningElement {
 
 
     // create new record functions
-    @track newRecordObject = {};
-    handleModalOpen() {
-        this.template.querySelector("section").classList.remove("slds-hide");
+    @track newProductObject = {};
+    @track newPriceBookObject = {};
+    
+    handleNewProductModalOpen() {
+        this.template.querySelector("section.newProduct").classList.remove("slds-hide");
+        this.template.querySelector("div.modalBackdrops").classList.remove("slds-hide");
+    }
+    handleNewPriceBookModalOpen() {
+        this.template.querySelector("section.newPriceBook").classList.remove("slds-hide");
         this.template.querySelector("div.modalBackdrops").classList.remove("slds-hide");
     }
     handleModalClose() {
-        this.template.querySelector("section").classList.add("slds-hide");
+        this.template.querySelectorAll("form").forEach(i => i.reset());
+        this.template.querySelectorAll("section").forEach(i => i.classList.add("slds-hide"));
         this.template.querySelector("div.modalBackdrops").classList.add("slds-hide");
-        this.newRecordObject = {};
-        this.template.querySelector('form').reset();
+        this.newProductObject = {};
+        this.newPriceBookObject = {};
     }
-    createRecordSave() {
-        if(this.newRecordObject.Name) {
+    createFormProductSave() {
+        if(this.newProductObject.Name) {
             this.isLoading = true;
-            const recordInput = { apiName: 'Product2', fields: this.newRecordObject };
+            const recordInput = { apiName: 'Product2', fields: this.newProductObject };
             createRecord(recordInput)
-            .then(product => {
+            .then(() => {
                 refreshApex(this.wiredProducts)
                 this.dispatchEvent(
                     new ShowToastEvent({
@@ -179,10 +186,46 @@ export default class ProductManagementTable extends LightningElement {
             );
         }
     }
-    createRecordCancel() {
-        this.handleModalClose();
+    createFormPriceBookSave() {
+        if(this.newPriceBookObject.Name) {
+            this.isLoading = true;
+            const recordInput = { apiName: 'Pricebook2', fields: this.newPriceBookObject };
+            createRecord(recordInput)
+            .then(() => {
+                // refreshApex(this.wiredProducts)
+                this.dispatchEvent(
+                    new ShowToastEvent({
+                        title: 'Success',
+                        message: 'Price Book created',
+                        variant: 'success',
+                    }),
+                );
+            })
+            .catch(error => {
+                this.dispatchEvent(
+                    new ShowToastEvent({
+                        title: 'Error creating record',
+                        message: error.body.message,
+                        variant: 'error',
+                    }),
+                );
+            });
+            this.isLoading = false;
+            this.handleModalClose();
+        } else {
+            this.dispatchEvent(
+                new ShowToastEvent({
+                    title: 'Price Book Name is required',
+                    message: 'Please complete the Price Book Name field in order to continue.',
+                    variant: 'error',
+                }),
+            );
+        }
     }
-    createRecordUpdateField(e) {
-        this.newRecordObject[e.target.name] = e.target.value;
+    createFormProductUpdate(e) {
+        this.newProductObject[e.target.name] = e.target.value;
+    }
+    createFormPriceBookUpdate(e) {
+        this.newPriceBookObject[e.target.name] = e.target.value;
     }
 }
