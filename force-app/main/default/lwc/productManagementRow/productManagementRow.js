@@ -18,7 +18,7 @@ export default class ProductManagementRow extends NavigationMixin(LightningEleme
 
     recordPageUrl
     renderedCallback() {
-        console.log(JSON.parse(JSON.stringify(this.record)));
+        // console.log(JSON.parse(JSON.stringify(this.record)));
         // Generate a URL to a Product record page
         this[NavigationMixin.GenerateUrl]({
             type: 'standard__recordPage',

@@ -111,11 +111,18 @@
             <table class="slds-table slds-table_cell-buffer slds-table_bordered">
                 <thead>
                     <tr class="slds-line-height_reset">
-                        <template for:each={columns} for:item="column">
-                            <th class="" scope="col" key={column}>
-                                <div class="slds-truncate" title="column">{column}</div>
-                            </th>
-                        </template>
+                            <template for:each={columns} for:item="column">
+                                <template if:true={column.hasUrl}>
+                                    <th class="" scope="col" key={column}>
+                                        <a class="slds-truncate" title="column" href={column.recordPageUrl} >{column.name}</a>
+                                    </th>
+                                </template>
+                                <template if:false={column.hasUrl}>
+                                    <th class="" scope="col" key={column}>
+                                        <div class="slds-truncate" title="column">{column.name}</div>
+                                    </th>
+                                </template>
+                            </template>
                     </tr>
                 </thead>
                 <tbody>

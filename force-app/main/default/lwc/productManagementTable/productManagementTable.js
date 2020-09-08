@@ -1,4 +1,5 @@
 import { LightningElement, wire, api, track } from 'lwc';
+import { NavigationMixin } from 'lightning/navigation';
 import { createRecord } from 'lightning/uiRecordApi';
 import { refreshApex } from '@salesforce/apex';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
@@ -6,7 +7,7 @@ import getProducts from '@salesforce/apex/productManagementController.getProduct
 import getPriceBooks from '@salesforce/apex/productManagementController.getPriceBooks'
 import getPriceBookEntries from '@salesforce/apex/productManagementController.getPriceBookEntries'
 
-export default class ProductManagementTable extends LightningElement {
+export default class ProductManagementTable extends NavigationMixin(LightningElement) {
 
     @track columns = [];
     newRecordFields = ['Name', 'Description', 'StockKeepingUnit']
@@ -60,11 +61,39 @@ export default class ProductManagementTable extends LightningElement {
         if (error) {
             this.error = error;
         } else if (data) {
-            this.columns.length = 0;
-            this.columns.push('Product Name', 'Description');
-            data.forEach( i => this.columns.push(i.Name))
-            this.columns.push('Edit/Viev');
-            this.priceBooks = data;
+            // create url for price books
+            const result = JSON.parse(JSON.stringify(data));
+            result.forEach(i => {
+                this[NavigationMixin.GenerateUrl]({
+                    type: 'standard__recordPage',
+                    attributes: {
+                        recordId: i.Id,
+                        actionName: 'view',
+                    },
+                }).then(url => {
+                    i.recordPageUrl = url;
+                });
+            })
+            this.priceBooks = result
+
+            const tempColomns = [];
+            tempColomns.push({
+                name: 'Product Name',
+                hasUrl: false
+            }, {
+                name: 'Description',
+                hasUrl: false
+            });
+            result.forEach( i => tempColomns.push({
+                name: i.Name,
+                recordPageUrl: i.recordPageUrl,
+                hasUrl: true
+            }))
+            tempColomns.push({
+                name: 'Edit/Viev',
+                hasUrl: false
+            });
+            this.columns = tempColomns;
         }
     }
 
