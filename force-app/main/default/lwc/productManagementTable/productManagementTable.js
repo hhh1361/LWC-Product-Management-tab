@@ -74,8 +74,6 @@ export default class ProductManagementTable extends NavigationMixin(LightningEle
                 }
             })
 
-            console.log(JSON.parse(JSON.stringify(this.priceBooks)))
-
             const tempColomns = [];
             tempColomns.push({
                 name: 'Product Name',
@@ -94,8 +92,10 @@ export default class ProductManagementTable extends NavigationMixin(LightningEle
                 hasUrl: false
             });
             this.columns = tempColomns;
+            this.isPricesAssign = false;
         }
     }
+    
 
     //fetch price book entries
     wiredPriceBookEntries
@@ -114,11 +114,11 @@ export default class ProductManagementTable extends NavigationMixin(LightningEle
 
     isPricesAssign;
     renderedCallback() {
+        // console.log('rendered callback')
         if(this.tableWithPriceEntries && !this.isPricesAssign) {
             this.isPricesAssign = true;
             this.table = this.tableWithPriceEntries;
         }
-        console.log(JSON.parse(JSON.stringify(this.columns)))
     }
 
 
@@ -293,7 +293,8 @@ export default class ProductManagementTable extends NavigationMixin(LightningEle
             const recordInput = { apiName: 'Pricebook2', fields: this.newPriceBookObject };
             createRecord(recordInput)
             .then(() => {
-                // refreshApex(this.wiredProducts)
+                refreshApex(this.wiredPriceBooks)
+                refreshApex(this.wiredPriceBookEntries)
                 this.dispatchEvent(
                     new ShowToastEvent({
                         title: 'Success',
