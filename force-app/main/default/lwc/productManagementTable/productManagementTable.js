@@ -35,7 +35,6 @@ export default class ProductManagementTable extends NavigationMixin(LightningEle
 	set table(value) {
 		this._table = value;
         this.setPagination(true);
-        console.log('set: ', value)
     }
     
     // fetch products
@@ -62,19 +61,20 @@ export default class ProductManagementTable extends NavigationMixin(LightningEle
             this.error = error;
         } else if (data) {
             // create url for price books
-            const result = JSON.parse(JSON.stringify(data));
-            result.forEach(i => {
-                this[NavigationMixin.GenerateUrl]({
-                    type: 'standard__recordPage',
-                    attributes: {
-                        recordId: i.Id,
-                        actionName: 'view',
-                    },
-                }).then(url => {
-                    i.recordPageUrl = url;
-                });
+            this.priceBooks = JSON.parse(JSON.stringify(data)).map(i => {
+                i.recordPageUrl = `/lightning/r/${i.Id}/view`;
+                 return i;
+            }).sort( (a, b) => {
+                if(a.IsStandard && !b.IsStandard) {
+                    return -1
+                } else if (!a.IsStandard && b.IsStandard){
+                    return 1
+                } else {
+                    return 0
+                }
             })
-            this.priceBooks = result
+
+            console.log(JSON.parse(JSON.stringify(this.priceBooks)))
 
             const tempColomns = [];
             tempColomns.push({
@@ -84,7 +84,7 @@ export default class ProductManagementTable extends NavigationMixin(LightningEle
                 name: 'Description',
                 hasUrl: false
             });
-            result.forEach( i => tempColomns.push({
+            this.priceBooks.forEach( i => tempColomns.push({
                 name: i.Name,
                 recordPageUrl: i.recordPageUrl,
                 hasUrl: true
@@ -114,12 +114,11 @@ export default class ProductManagementTable extends NavigationMixin(LightningEle
 
     isPricesAssign;
     renderedCallback() {
-        console.log('connected callback')
         if(this.tableWithPriceEntries && !this.isPricesAssign) {
-            console.log('assign prices')
             this.isPricesAssign = true;
             this.table = this.tableWithPriceEntries;
         }
+        console.log(JSON.parse(JSON.stringify(this.columns)))
     }
 
 
