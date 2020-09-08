@@ -3,12 +3,16 @@ import { createRecord } from 'lightning/uiRecordApi';
 import { refreshApex } from '@salesforce/apex';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import getProducts from '@salesforce/apex/productManagementController.getProducts'
+import getPriceBooks from '@salesforce/apex/productManagementController.getPriceBooks'
+import getPriceBookEntries from '@salesforce/apex/productManagementController.getPriceBookEntries'
 
 export default class ProductManagementTable extends LightningElement {
 
-    fields = ['Product Name', 'Description', 'Product Code', 'Pricebook standart', 'Pricebook 1', 'Pricebook 2', 'Edit/Viev']
+    @track columns = [];
     newRecordFields = ['Name', 'Description', 'StockKeepingUnit']
 
+    @track priceBooks;
+    @track priceBookEntries = {};
 	@track activeDataTableRecords = [];
     @track _table;
     @track defaultTable
@@ -29,9 +33,11 @@ export default class ProductManagementTable extends LightningElement {
 	}
 	set table(value) {
 		this._table = value;
-		this.setPagination(true);
+        this.setPagination(true);
+        console.log('set: ', value)
     }
     
+    // fetch products
     wiredProducts
     @wire(getProducts)
     wireProducts(value) {
@@ -40,9 +46,76 @@ export default class ProductManagementTable extends LightningElement {
         if (error) {
             this.error = error;
         } else if (data) {
-            console.log(data)
             this.table = data;
             this.defaultTable = data;
+        }
+    }
+    
+    //fetch price books
+    wiredPriceBooks
+    @wire(getPriceBooks)
+    wirePriceBooks(value) {
+        this.wiredPriceBooks = value;
+        const { error, data } = value;
+        if (error) {
+            this.error = error;
+        } else if (data) {
+            this.columns.length = 0;
+            this.columns.push('Product Name', 'Description');
+            data.forEach( i => this.columns.push(i.Name))
+            this.columns.push('Edit/Viev');
+            this.priceBooks = data;
+        }
+    }
+
+    //fetch price book entries
+    wiredPriceBookEntries
+    @wire(getPriceBookEntries)
+    wirePriceBookEntries(value) {
+        this.wiredPriceBookEntries = value;
+        const { error, data } = value;
+        if (error) {
+            this.error = error;
+        } else if (data) {
+            data.forEach( i => {
+                this.priceBookEntries[i.Pricebook2Id + i.Product2Id] = i.UnitPrice;
+            });
+        }
+    }
+
+    isPricesAssign;
+    renderedCallback() {
+        console.log('connected callback')
+        if(this.tableWithPriceEntries && !this.isPricesAssign) {
+            console.log('assign prices')
+            this.isPricesAssign = true;
+            this.table = this.tableWithPriceEntries;
+        }
+    }
+
+
+    // fulfill datatable with prices per each product/pricebook
+    get tableWithPriceEntries() {
+        let priceBooks;
+        let priceBookEntries;
+        let result;
+
+        if(this.priceBookEntries && this.priceBooks && this.table) {
+            priceBooks = JSON.parse(JSON.stringify(this.priceBooks));
+            priceBookEntries = JSON.parse(JSON.stringify(this.priceBookEntries));
+            result = JSON.parse(JSON.stringify(this.table));
+
+            result.forEach( product => {
+                product.prices = [];
+                priceBooks.forEach( priceBook => {
+                    product.prices.push({
+                        pricebook: priceBook.Name,
+                        pricebookEntry: priceBookEntries[priceBook.Id + product.Id] ? priceBookEntries[priceBook.Id + product.Id] : null,
+                        id: priceBook.Id + product.Id
+                    });
+                })
+            })
+            return result;
         }
     }
     
@@ -119,7 +192,7 @@ export default class ProductManagementTable extends LightningElement {
 				}
 			}
 			this.tableSize = this._table ? this._table.length : this.tableSize;
-			this.isLoading = false;
+            this.isLoading = false;
         }
     }
     

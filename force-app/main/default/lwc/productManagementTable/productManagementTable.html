@@ -106,14 +106,14 @@
             </div>
         </section>
 
-        <!-- data table -->
+        <!-- block: data table -->
         <div class="slds-table_edit_container slds-is-relative">
             <table class="slds-table slds-table_cell-buffer slds-table_bordered">
                 <thead>
                     <tr class="slds-line-height_reset">
-                        <template for:each={fields} for:item="field">
-                            <th class="" scope="col" key={field}>
-                                <div class="slds-truncate" title="field">{field}</div>
+                        <template for:each={columns} for:item="column">
+                            <th class="" scope="col" key={column}>
+                                <div class="slds-truncate" title="column">{column}</div>
                             </th>
                         </template>
                     </tr>
